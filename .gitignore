@@ -1,0 +1,7 @@
+.venv/
+.trae/
+fucntion.txt
+uv.lock
+src/FLStudioAMCP/__pycache__/
+src/FLStudioAMCP/tools/__pycache__
+src/FLStudioAMCP/utils/__pycache__
