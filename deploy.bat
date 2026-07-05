@@ -1,10 +1,11 @@
 @echo off
 echo ========================================
-echo FL Studio MCP - Deploy
+echo FLStudioAMCP - Deploy
 echo ========================================
 echo.
 
 set "SRC=%~dp0"
+set "SRC_ESC=%SRC:\=\\%"
 set "DST=%USERPROFILE%\Documents\Image-Line\FL Studio\Settings"
 set "HW=%DST%\Hardware\NirithyCore"
 set "PR=%DST%\Piano roll scripts"
@@ -22,6 +23,25 @@ if errorlevel 1 goto :err
 if not exist "%HW%\device_NirithyCore.py" goto :err
 if not exist "%PR%\NirithyCore.pyscript" goto :err
 
+echo.
+echo ========================================
+echo MCP Config (copy to mcp.json):
+echo ========================================
+echo.
+echo {
+echo   "mcpServers": {
+echo     "fl-studio": {
+echo       "command": "uv",
+echo       "args": [
+echo         "run",
+echo         "--directory",
+echo         "%SRC_ESC%src",
+echo         "FLStudioAMCP"
+echo       ],
+echo       "cwd": "%SRC_ESC%src\\FLStudioAMCP"
+echo     }
+echo   }
+echo }
 echo.
 echo ========================================
 echo Done!
