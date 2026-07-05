@@ -1,5 +1,5 @@
 # name=NirithyCore
-# url=https://github.com/karl-andres/FLStudioAMCP
+# url=https://github.com/ZeroFxc/FLstudioAMCP
 # supportedDevices=NirithyCore
 
 
