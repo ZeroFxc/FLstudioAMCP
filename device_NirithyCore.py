@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 import inspect
+import time
 
 # FL Studio API modules (available when running inside FL Studio)
 import channels
@@ -269,6 +270,14 @@ def dispatch_command(action: str, params: dict) -> dict:
     elif action == "system.listFLStudioAPI":
         return handle_system_list_fl_studio_api(params)
 
+    # Playlist 命令
+    elif action == "playlist.addPattern":
+        return handle_playlist_add_pattern(params)
+
+    # Mixer 插件命令
+    elif action == "mixer.addPlugin":
+        return handle_mixer_add_plugin(params)
+
     # 通用 FL Studio API 动态调用
     elif action == "flapi.call":
         _debug_log(f"flapi.call route: module={params.get('module')}, function={params.get('function')}")
@@ -287,6 +296,7 @@ def dispatch_command(action: str, params: dict) -> dict:
 def handle_transport_start() -> dict:
     """Toggle play/pause."""
     transport.start()
+    time.sleep(0.1)  # 等待 FL Studio 更新播放状态，避免竞态
     return {"is_playing": transport.isPlaying() == 1}
 
 
@@ -1150,3 +1160,62 @@ def handle_flapi_call(params: dict) -> dict:
         return {"value": None}
     else:
         return {"value": str(result)}
+
+
+# =============================================================================
+# Playlist Handlers
+# =============================================================================
+
+
+def handle_playlist_add_pattern(params: dict) -> dict:
+    """添加 Pattern 到播放列表。"""
+    track_index = params.get("track_index", 0)
+    pattern_index = params.get("pattern_index", 0)
+    position = params.get("position", 0)
+    length = params.get("length", 4)
+    try:
+        # 尝试多种 FL Studio API 函数名
+        if hasattr(_playlist, 'addPattern'):
+            _playlist.addPattern(pattern_index, track_index, position, length)
+        elif hasattr(_playlist, 'liveDisplayZone'):
+            _playlist.liveDisplayZone(track_index, position, length, pattern_index)
+        else:
+            # 列出可用函数帮助调试
+            available = [x for x in dir(_playlist) if not x.startswith('_')]
+            return {"error": f"playlist 模块不支持添加 Pattern。可用函数: {available}"}
+        return {"success": True, "added": True}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+# =============================================================================
+# Mixer Plugin Handlers
+# =============================================================================
+
+
+def handle_mixer_add_plugin(params: dict) -> dict:
+    """添加效果器插件到混音器轨道。
+
+    Args:
+        params: {
+            "track_index": 混音器轨道索引（0=Master）,
+            "plugin_name": 插件名称,
+        }
+    """
+    track_index = params.get("track_index", 0)
+    plugin_name = params.get("plugin_name", "")
+    try:
+        # 选择目标轨道
+        mixer.setTrackNumber(track_index)
+        # 添加插件（-1 = 添加到末尾）
+        mixer.addPlugin(plugin_name, -1)
+        # 获取添加的插件索引
+        plugin_count = mixer.getTrackPluginCount(track_index)
+        return {
+            "success": True,
+            "plugin_name": plugin_name,
+            "track_index": track_index,
+            "plugin_index": plugin_count - 1,
+        }
+    except Exception as e:
+        return {"error": str(e)}

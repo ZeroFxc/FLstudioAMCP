@@ -405,6 +405,20 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         },
         param_map={"track_index": "track", "separation": "separation"},
     ),
+    "mixer.add_plugin": _def(
+        "mixer.add_plugin", "添加效果器插件到混音器轨道",
+        "给混音器指定轨道添加效果器插件",
+        "mixer",
+        action="mixer.addPlugin",
+        params={
+            "track_index": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引（0=Master）"},
+            "plugin_name": {"type": "str", "required": True, "default": "", "description": "插件名称，如 'Fruity Reeverb 2'"},
+        },
+        param_map={
+            "track_index": "track_index",
+            "plugin_name": "plugin_name",
+        },
+    ),
 
     # --- 新增 ---
     "mixer.get_track_peaks": _def(
@@ -2528,6 +2542,24 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
             "track_index": {"type": "int", "required": True, "default": 0, "description": "轨道索引"},
         },
     ),
+    "playlist.add_pattern": _def(
+        "playlist.add_pattern", "添加 Pattern 到播放列表",
+        "将指定 Pattern 放置到播放列表的指定轨道和位置",
+        "playlist",
+        action="playlist.addPattern",
+        params={
+            "track_index": {"type": "int", "required": True, "default": 0, "description": "轨道索引"},
+            "pattern_index": {"type": "int", "required": True, "default": 0, "description": "Pattern 索引"},
+            "position": {"type": "int", "required": True, "default": 0, "description": "起始位置（拍）"},
+            "length": {"type": "int", "required": True, "default": 4, "description": "长度（拍）"},
+        },
+        param_map={
+            "track_index": "track_index",
+            "pattern_index": "pattern_index",
+            "position": "position",
+            "length": "length",
+        },
+    ),
     "playlist.is_track_muted": _def(
         "playlist.is_track_muted", "检查轨道是否已静音",
         "检查播放列表轨道是否处于静音状态",
@@ -4394,50 +4426,44 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
     ),
 
     # =========================================================================
-    # piano_roll - 钢琴卷帘（特殊处理器，不通过 MIDI action）
+    # piano_roll - 钢琴卷帘（通过 MIDI 通信，在 device_NirithyCore.py 中处理）
     # =========================================================================
     "piano_roll.add_notes": _def(
         "piano_roll.add_notes", "添加音符",
-        "在钢琴卷帘中添加音符（持久化，通过 JSON 文件通信）",
+        "在钢琴卷帘中添加音符",
         "piano_roll",
-        handler="piano_roll",
+        action="piano_roll.add_notes",
         params={
-            "notes": {"type": "list", "required": True, "default": [], "description": "音符列表，每项包含 midi, duration, time, velocity"},
-            "mode": {"type": "str", "required": False, "default": "add", "description": "'add'=添加, 'replace'=替换现有"},
-            "auto_trigger": {"type": "bool", "required": False, "default": True, "description": "是否自动触发 FL Studio"},
+            "notes": {"type": "list", "required": True, "default": [], "description": "音符列表，每项包含 note, time, duration, velocity"},
         },
     ),
     "piano_roll.add_chord": _def(
         "piano_roll.add_chord", "添加和弦",
         "在钢琴卷帘中添加和弦（多个同时音符）",
         "piano_roll",
-        handler="piano_roll",
+        action="piano_roll.add_chord",
         params={
-            "midi_notes": {"type": "list", "required": True, "default": [], "description": "MIDI 音符编号列表"},
-            "time": {"type": "float", "required": False, "default": 0.0, "description": "起始位置（四分音符为单位）"},
-            "duration": {"type": "float", "required": False, "default": 1.0, "description": "时长（四分音符为单位）"},
-            "velocity": {"type": "float", "required": False, "default": 0.8, "description": "力度（0.0 ~ 1.0）"},
-            "auto_trigger": {"type": "bool", "required": False, "default": True, "description": "是否自动触发 FL Studio"},
+            "notes": {"type": "list", "required": True, "default": [], "description": "音符 MIDI 值列表"},
+            "time": {"type": "float", "required": False, "default": 0.0, "description": "起始位置（拍）"},
+            "duration": {"type": "float", "required": False, "default": 1.0, "description": "时长（拍）"},
+            "velocity": {"type": "int", "required": False, "default": 100, "description": "力度 (0-127)"},
         },
     ),
     "piano_roll.delete_notes": _def(
         "piano_roll.delete_notes", "删除音符",
         "从钢琴卷帘中删除指定音符",
         "piano_roll",
-        handler="piano_roll",
+        action="piano_roll.delete_notes",
         params={
-            "notes": {"type": "list", "required": True, "default": [], "description": "要删除的音符列表，每项包含 midi, time"},
-            "auto_trigger": {"type": "bool", "required": False, "default": True, "description": "是否自动触发 FL Studio"},
+            "notes": {"type": "list", "required": True, "default": [], "description": "要删除的音符列表"},
         },
     ),
     "piano_roll.clear": _def(
         "piano_roll.clear", "清除所有音符",
         "清除钢琴卷帘中的所有音符",
         "piano_roll",
-        handler="piano_roll",
-        params={
-            "auto_trigger": {"type": "bool", "required": False, "default": True, "description": "是否自动触发 FL Studio"},
-        },
+        action="piano_roll.clear",
+        params={},
     ),
 
     # =========================================================================

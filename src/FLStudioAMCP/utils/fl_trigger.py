@@ -89,13 +89,42 @@ class FLStudioTrigger:
             return False
 
     def _trigger_windows(self) -> bool:
-        """Trigger FL Studio on Windows using pynput."""
+        """触发 FL Studio on Windows：先激活窗口，再发送 Ctrl+Alt+Y。"""
         try:
+            import ctypes
+            from ctypes import wintypes
+
+            # 查找 FL Studio 窗口
+            hwnd = ctypes.windll.user32.FindWindowW(None, None)
+            fl_hwnd = None
+
+            # 枚举所有顶层窗口找到 FL Studio
+            def enum_callback(h, _):
+                nonlocal fl_hwnd
+                if fl_hwnd:
+                    return True
+                length = ctypes.windll.user32.GetWindowTextLengthW(h)
+                if length > 0:
+                    buf = ctypes.create_unicode_buffer(length + 1)
+                    ctypes.windll.user32.GetWindowTextW(h, buf, length + 1)
+                    title = buf.value
+                    if "FL Studio" in title:
+                        fl_hwnd = h
+                        return False
+                return True
+
+            EnumWindowsProc = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+            ctypes.windll.user32.EnumWindows(EnumWindowsProc(enum_callback), 0)
+
+            if fl_hwnd:
+                # 激活 FL Studio 窗口
+                ctypes.windll.user32.SetForegroundWindow(fl_hwnd)
+                import time
+                time.sleep(0.2)
+
+            # 发送 Ctrl+Alt+Y
             from pynput.keyboard import Controller, Key
-
             keyboard = Controller()
-
-            # Send Ctrl+Alt+Y
             keyboard.press(Key.ctrl)
             keyboard.press(Key.alt)
             keyboard.press("y")

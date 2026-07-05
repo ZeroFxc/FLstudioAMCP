@@ -7,6 +7,7 @@ import math
 import platform
 import time
 from pathlib import Path
+
 from typing import TYPE_CHECKING
 
 from FLStudioAMCP.tools.registry import TOOL_REGISTRY, get_tool, search_tools
@@ -21,7 +22,7 @@ def register_system_tools(mcp: FastMCP) -> None:
     from FLStudioAMCP.utils.fl_trigger import get_trigger, trigger_fl_studio
 
     # =========================================================================
-    # 钢琴卷帘文件通信辅助
+    # 钢琴卷帘辅助函数（热键 + 文件通信）
     # =========================================================================
 
     def _get_fl_scripts_dir() -> Path:
@@ -36,7 +37,7 @@ def register_system_tools(mcp: FastMCP) -> None:
         return scripts_dir
 
     def _handle_piano_roll(tool_id: str, params: dict) -> dict:
-        """处理钢琴卷帘工具（文件通信 + 热键触发）。"""
+        """处理钢琴卷帘工具：写入请求文件 → 激活 FL Studio 窗口 → 发送 Ctrl+Alt+Y 热键触发 pyscript。"""
         trigger = get_trigger()
         if not trigger.is_supported:
             return {"error": f"钢琴卷帘工具不支持当前平台: {platform.system()}"}
@@ -45,7 +46,6 @@ def register_system_tools(mcp: FastMCP) -> None:
         request_file = scripts_dir / "mcp_request.json"
         response_file = scripts_dir / "mcp_response.json"
 
-        # 根据 tool_id 确定 action
         action_map = {
             "piano_roll.add_notes": "add_notes",
             "piano_roll.add_chord": "add_chord",
@@ -56,7 +56,6 @@ def register_system_tools(mcp: FastMCP) -> None:
         if not action:
             return {"error": f"未知的钢琴卷帘操作: {tool_id}"}
 
-        # 构造请求
         request_data = {"action": action}
         if action == "add_notes":
             request_data["notes"] = params.get("notes", [])
@@ -68,19 +67,17 @@ def register_system_tools(mcp: FastMCP) -> None:
             request_data["notes"] = params.get("notes", [])
 
         try:
-            # 清除旧响应
             if response_file.exists():
                 response_file.unlink()
             request_file.write_text(json.dumps([request_data]), encoding="utf-8")
         except Exception as e:
             return {"error": f"写入请求文件失败: {e}"}
 
-        # 触发 FL Studio
+        # 触发 FL Studio（先激活窗口，再发送热键）
         success = trigger_fl_studio(delay=3.0)
         if not success:
             return {"error": "触发 FL Studio 热键失败"}
 
-        # 等待响应
         for _ in range(20):
             if response_file.exists():
                 try:
@@ -172,8 +169,7 @@ def register_system_tools(mcp: FastMCP) -> None:
         """通过工具 ID 调用 MCP 工具。
 
         根据工具 ID 查找注册表，构造参数并执行对应的 FL Studio 操作。
-        对于钢琴卷帘工具，使用文件通信 + 热键触发方式。
-        其他工具通过 MIDI 连接发送命令。
+        钢琴卷帘工具使用热键+文件通信（Ctrl+Alt+Y 触发 pyscript）。
 
         Args:
             tool_id: 工具唯一标识（如 "transport.play"、"mixer.set_track_volume"）
@@ -183,9 +179,8 @@ def register_system_tools(mcp: FastMCP) -> None:
         if not tool:
             return {"error": f"未知工具: {tool_id}"}
 
-        # 钢琴卷帘特殊处理
-        handler = tool.get("handler")
-        if handler == "piano_roll":
+        # 钢琴卷帘工具：热键 + 文件通信
+        if tool_id.startswith("piano_roll."):
             return _handle_piano_roll(tool_id, params)
 
         # MIDI 工具
@@ -208,7 +203,9 @@ def register_system_tools(mcp: FastMCP) -> None:
                 "args": arg_values,
             }
         else:
-            # 参数映射
+            # 参数映射：通过 param_map 将文档参数名翻译为 FL Studio API 实际 key
+            # 由于 registry.py 中 params key 已与 param_map 映射目标一致，
+            # 调用者按文档参数名传参即可，无需关心内部映射关系
             param_map = tool.get("param_map", {})
             action_params = {}
             for mcp_key, value in params.items():
