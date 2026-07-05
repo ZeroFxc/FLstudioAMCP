@@ -67,7 +67,7 @@ def _get_script_dir() -> Path:
         # Linux (unlikely but handle it)
         base = Path.home() / "Documents" / "Image-Line" / "FL Studio" / "Settings"
 
-    return base / "Hardware" / "FLStudioMCP"
+    return base / "Hardware" / "NirithyCore"
 
 
 # File paths for JSON communication
@@ -144,10 +144,12 @@ def write_response(response: dict):
 def _debug_log(msg: str) -> None:
     """将调试信息写入桌面文件，方便在 FL Studio 脚本环境中查看。"""
     try:
-        from pathlib import Path
-        log_file = Path.home() / "Desktop" / "mcp_debug.log"
+        import os
+        from datetime import datetime
+        # FL Studio 嵌入式 Python 中 Path.home() 可能不可靠，用 USERPROFILE
+        desktop = os.path.join(os.environ.get("USERPROFILE", os.path.expanduser("~")), "Desktop")
+        log_file = os.path.join(desktop, "mcp_debug.log")
         with open(log_file, "a", encoding="utf-8") as f:
-            from datetime import datetime
             f.write(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}\n")
     except Exception:
         pass

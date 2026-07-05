@@ -261,6 +261,72 @@ def register_system_tools(mcp: FastMCP) -> None:
         }
 
     # =========================================================================
+    # 调试工具
+    # =========================================================================
+
+    @mcp.tool()
+    def fl_debug() -> dict:
+        """FL Studio MCP 动态调试工具。
+
+        直接调用 FL Studio 测试各种通信路径，返回结果用于诊断。
+        不用任何硬编码路径，纯动态调用。
+        """
+        conn = get_connection()
+        try:
+            conn.ensure_connected()
+        except RuntimeError as e:
+            return {"connected": False, "error": str(e)}
+
+        results = {"connected": True, "port": conn._midi._port_name, "tests": {}}
+
+        # 测试直接 MIDI action
+        r = conn.send_command("transport.getStatus", {}, timeout=2.0)
+        results["tests"]["midi_direct"] = {
+            "ok": r.get("success", False) and "error" not in r,
+            "response": r,
+        }
+
+        # 测试 flapi.call - patterns
+        r = conn.send_command("flapi.call", {
+            "module": "patterns", "function": "patternCount", "args": []
+        }, timeout=2.0)
+        results["tests"]["flapi_patterns"] = {
+            "ok": r.get("success", False) and "error" not in r,
+            "response": r,
+        }
+
+        # 测试 flapi.call - playlist
+        r = conn.send_command("flapi.call", {
+            "module": "playlist", "function": "trackCount", "args": []
+        }, timeout=2.0)
+        results["tests"]["flapi_playlist"] = {
+            "ok": r.get("success", False) and "error" not in r,
+            "response": r,
+        }
+
+        # 测试 flapi.call - transport
+        r = conn.send_command("flapi.call", {
+            "module": "transport", "function": "getLoopMode", "args": []
+        }, timeout=2.0)
+        results["tests"]["flapi_transport"] = {
+            "ok": r.get("success", False) and "error" not in r,
+            "response": r,
+        }
+
+        # 测试 channels 直接 action
+        r = conn.send_command("channels.getCount", {"global_count": True}, timeout=2.0)
+        results["tests"]["channels_get_count"] = {
+            "ok": r.get("success", False) and "error" not in r,
+            "response": r,
+        }
+
+        # 汇总
+        all_ok = all(t["ok"] for t in results["tests"].values())
+        results["all_pass"] = all_ok
+
+        return results
+
+    # =========================================================================
     # 保留：获取 FL Studio 原生 API
     # =========================================================================
 

@@ -30,7 +30,7 @@ def _get_fl_hardware_dir() -> Path:
         # Linux fallback
         base = Path.home() / ".fl-studio" / "Settings"
 
-    hardware_dir = base / "Hardware" / "FLStudioMCP"
+    hardware_dir = base / "Hardware" / "NirithyCore"
     hardware_dir.mkdir(parents=True, exist_ok=True)
     return hardware_dir
 
