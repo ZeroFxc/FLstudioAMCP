@@ -301,7 +301,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "mixer",
         action="mixer.getTrackInfo",
         params={
-            "track_index": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引（0=Master）"},
+            "track": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引（0=Master）"},
         },
         param_map={"track_index": "track"},
     ),
@@ -321,7 +321,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "mixer",
         action="mixer.setTrackVolume",
         params={
-            "track_index": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引"},
+            "track": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引"},
             "volume": {"type": "float", "required": True, "default": 0.8, "description": "音量值（0.0=静音, 1.0=0dB）"},
         },
         param_map={"track_index": "track", "volume": "volume"},
@@ -332,7 +332,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "mixer",
         action="mixer.setTrackPan",
         params={
-            "track_index": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引"},
+            "track": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引"},
             "pan": {"type": "float", "required": True, "default": 0.0, "description": "声像位置（-1.0=左, 0.0=中, 1.0=右）"},
         },
         param_map={"track_index": "track", "pan": "pan"},
@@ -343,7 +343,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "mixer",
         action="mixer.muteTrack",
         params={
-            "track_index": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引"},
+            "track": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引"},
             "muted": {"type": "bool", "required": False, "default": None, "description": "True=静音, False=取消静音, None=切换"},
         },
         param_map={"track_index": "track", "muted": "muted"},
@@ -354,7 +354,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "mixer",
         action="mixer.soloTrack",
         params={
-            "track_index": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引"},
+            "track": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引"},
             "solo": {"type": "bool", "required": False, "default": None, "description": "True=独奏, False=取消独奏, None=切换"},
             "mode": {"type": "int", "required": False, "default": 3, "description": "独奏模式：1=源轨道, 2=发送轨道, 3=两者, 4=仅此轨道"},
         },
@@ -366,7 +366,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "mixer",
         action="mixer.armTrack",
         params={
-            "track_index": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引"},
+            "track": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引"},
         },
         param_map={"track_index": "track"},
     ),
@@ -376,7 +376,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "mixer",
         action="mixer.setTrackName",
         params={
-            "track_index": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引"},
+            "track": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引"},
             "name": {"type": "str", "required": True, "default": "", "description": "新轨道名称"},
         },
         param_map={"track_index": "track", "name": "name"},
@@ -387,7 +387,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "mixer",
         action="mixer.setTrackColor",
         params={
-            "track_index": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引"},
+            "track": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引"},
             "r": {"type": "int", "required": True, "default": 0, "description": "红色分量（0-255）"},
             "g": {"type": "int", "required": True, "default": 0, "description": "绿色分量（0-255）"},
             "b": {"type": "int", "required": True, "default": 0, "description": "蓝色分量（0-255）"},
@@ -400,7 +400,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "mixer",
         action="mixer.setStereoSep",
         params={
-            "track_index": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引"},
+            "track": {"type": "int", "required": True, "default": 0, "description": "混音器轨道索引"},
             "separation": {"type": "float", "required": True, "default": 0.0, "description": "立体声分离度（-1.0 ~ 1.0）"},
         },
         param_map={"track_index": "track", "separation": "separation"},
@@ -1205,7 +1205,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "channels",
         action="channels.getInfo",
         params={
-            "channel_index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
+            "index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
             "use_global_index": {"type": "bool", "required": False, "default": True, "description": "是否使用全局索引"},
         },
         param_map={"channel_index": "index", "use_global_index": "use_global"},
@@ -1228,7 +1228,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "channels",
         action="channels.select",
         params={
-            "channel_index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
+            "index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
             "select": {"type": "bool", "required": False, "default": True, "description": "True=选择, False=取消选择"},
         },
         param_map={"channel_index": "index", "select": "select"},
@@ -1239,7 +1239,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "channels",
         action="channels.selectOne",
         params={
-            "channel_index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
+            "index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
         },
         param_map={"channel_index": "index"},
     ),
@@ -1249,7 +1249,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "channels",
         action="channels.triggerNote",
         params={
-            "channel_index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
+            "channel": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
             "note": {"type": "int", "required": True, "default": 60, "description": "MIDI 音符编号（0-127, 60=C5）"},
             "velocity": {"type": "int", "required": False, "default": 100, "description": "力度（1-127, 0=音符关闭）"},
             "midi_channel": {"type": "int", "required": False, "default": -1, "description": "MIDI 通道（-1=默认）"},
@@ -1262,7 +1262,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "channels",
         action="channels.setVolume",
         params={
-            "channel_index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
+            "index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
             "volume": {"type": "float", "required": True, "default": 0.8, "description": "音量值（0.0=静音, 1.0=最大）"},
         },
         param_map={"channel_index": "index", "volume": "volume"},
@@ -1273,7 +1273,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "channels",
         action="channels.setPan",
         params={
-            "channel_index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
+            "index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
             "pan": {"type": "float", "required": True, "default": 0.0, "description": "声像（-1.0=左, 0.0=中, 1.0=右）"},
         },
         param_map={"channel_index": "index", "pan": "pan"},
@@ -1284,7 +1284,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "channels",
         action="channels.mute",
         params={
-            "channel_index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
+            "index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
             "muted": {"type": "bool", "required": False, "default": None, "description": "True=静音, False=取消静音, None=切换"},
         },
         param_map={"channel_index": "index", "muted": "muted"},
@@ -1295,7 +1295,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "channels",
         action="channels.solo",
         params={
-            "channel_index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
+            "index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
             "solo": {"type": "bool", "required": False, "default": None, "description": "True=独奏, False=取消独奏, None=切换"},
         },
         param_map={"channel_index": "index", "solo": "solo"},
@@ -1306,7 +1306,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "channels",
         action="channels.setName",
         params={
-            "channel_index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
+            "index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
             "name": {"type": "str", "required": True, "default": "", "description": "新通道名称"},
         },
         param_map={"channel_index": "index", "name": "name"},
@@ -1317,7 +1317,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "channels",
         action="channels.setColor",
         params={
-            "channel_index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
+            "index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
             "r": {"type": "int", "required": True, "default": 0, "description": "红色分量（0-255）"},
             "g": {"type": "int", "required": True, "default": 0, "description": "绿色分量（0-255）"},
             "b": {"type": "int", "required": True, "default": 0, "description": "蓝色分量（0-255）"},
@@ -1878,7 +1878,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "stepseq",
         action="channels.getGridBit",
         params={
-            "channel_index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
+            "channel": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
             "position": {"type": "int", "required": True, "default": 0, "description": "步进位置（0-based）"},
         },
         param_map={"channel_index": "channel", "position": "position"},
@@ -1889,7 +1889,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "stepseq",
         action="channels.setGridBit",
         params={
-            "channel_index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
+            "channel": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
             "position": {"type": "int", "required": True, "default": 0, "description": "步进位置（0-based）"},
             "value": {"type": "bool", "required": True, "default": False, "description": "True=激活, False=关闭"},
         },
@@ -1901,7 +1901,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "stepseq",
         action="channels.getStepSequence",
         params={
-            "channel_index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
+            "channel": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
             "steps": {"type": "int", "required": False, "default": 16, "description": "步进数量"},
         },
         param_map={"channel_index": "channel", "steps": "steps"},
@@ -1912,7 +1912,7 @@ TOOL_REGISTRY: dict[str, dict[str, Any]] = {
         "stepseq",
         action="channels.setStepSequence",
         params={
-            "channel_index": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
+            "channel": {"type": "int", "required": True, "default": 0, "description": "通道索引"},
             "pattern": {"type": "list", "required": True, "default": [], "description": "步进序列（布尔值列表）"},
         },
         param_map={"channel_index": "channel", "pattern": "pattern"},

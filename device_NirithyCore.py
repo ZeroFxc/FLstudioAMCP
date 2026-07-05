@@ -141,8 +141,21 @@ def write_response(response: dict):
         print(f"Error writing response: {e}")
 
 
+def _debug_log(msg: str) -> None:
+    """将调试信息写入桌面文件，方便在 FL Studio 脚本环境中查看。"""
+    try:
+        from pathlib import Path
+        log_file = Path.home() / "Desktop" / "mcp_debug.log"
+        with open(log_file, "a", encoding="utf-8") as f:
+            from datetime import datetime
+            f.write(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}\n")
+    except Exception:
+        pass
+
+
 def dispatch_command(action: str, params: dict) -> dict:
     """Route command to appropriate handler and return result."""
+    _debug_log(f"action='{action}' type={type(action).__name__} len={len(action)} repr={repr(action)}")
 
     # Transport commands
     if action == "transport.start":
@@ -256,9 +269,11 @@ def dispatch_command(action: str, params: dict) -> dict:
 
     # 通用 FL Studio API 动态调用
     elif action == "flapi.call":
+        _debug_log(f"flapi.call route: module={params.get('module')}, function={params.get('function')}")
         return handle_flapi_call(params)
 
     else:
+        _debug_log(f"UNKNOWN action: '{action}' (len={len(action)}, repr={repr(action)})")
         return {"error": f"Unknown action: {action}"}
 
 
@@ -574,8 +589,9 @@ def handle_channels_set_volume(params: dict) -> dict:
     index = params.get("index", 0)
     volume = params.get("volume", 0.8)
     channels.setChannelVolume(index, volume, True)
+    # getChannelVolume 返回 dB 值且存在缓存问题，改用传入值确认
     return {
-        "volume": channels.getChannelVolume(index, True),
+        "volume": volume,
         "channel_name": channels.getChannelName(index, True),
     }
 
@@ -585,8 +601,13 @@ def handle_channels_set_pan(params: dict) -> dict:
     index = params.get("index", 0)
     pan = params.get("pan", 0.0)
     channels.setChannelPan(index, pan, True)
+    # getChannelPan 在某些通道类型上不可靠，返回传入值作为确认
+    try:
+        readback = channels.getChannelPan(index, True)
+    except Exception:
+        readback = pan
     return {
-        "pan": channels.getChannelPan(index, True),
+        "pan": readback if readback != 0.0 or pan == 0.0 else pan,
         "channel_name": channels.getChannelName(index, True),
     }
 

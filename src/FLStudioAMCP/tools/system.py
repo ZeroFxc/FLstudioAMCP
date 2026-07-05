@@ -130,12 +130,18 @@ def register_system_tools(mcp: FastMCP) -> None:
         end = start + page_size
         page_tools = tools[start:end]
 
+        # 为每个工具条目添加 calling_convention，不修改原始 TOOL_REGISTRY
+        tools_with_convention = [
+            {**tool, "calling_convention": "params"}
+            for tool in page_tools
+        ]
+
         return {
             "total": total,
             "total_pages": total_pages,
             "current_page": page,
             "page_size": page_size,
-            "tools": page_tools,
+            "tools": tools_with_convention,
         }
 
     @mcp.tool()
@@ -150,10 +156,15 @@ def register_system_tools(mcp: FastMCP) -> None:
             category: 可选，限定搜索范围到指定分类
         """
         results = search_tools(query, category if category else None)
+        # 为每个工具条目添加 calling_convention，不修改原始 TOOL_REGISTRY
+        results_with_convention = [
+            {**tool, "calling_convention": "params"}
+            for tool in results
+        ]
         return {
             "query": query,
-            "total": len(results),
-            "tools": results,
+            "total": len(results_with_convention),
+            "tools": results_with_convention,
         }
 
     @mcp.tool()
@@ -217,6 +228,37 @@ def register_system_tools(mcp: FastMCP) -> None:
             return {"error": str(e)}
 
         return result
+
+    @mcp.tool()
+    def fl_get_tool_schema(category: str = "") -> dict:
+        """批量获取工具 schema 摘要，减少逐个读取 MCP 工具描述的开销。
+
+        返回所有工具的摘要信息，每个工具包含 tool_id、name、description、
+        category、params、calling_convention。支持按分类过滤。
+
+        Args:
+            category: 按分类过滤（留空返回全部）
+        """
+        if category:
+            tools = [t for t in TOOL_REGISTRY.values() if t["category"] == category]
+        else:
+            tools = list(TOOL_REGISTRY.values())
+
+        summaries = []
+        for tool in tools:
+            summaries.append({
+                "tool_id": tool["id"],
+                "name": tool["name"],
+                "description": tool["description"],
+                "category": tool["category"],
+                "params": tool.get("params", {}),
+                "calling_convention": "params",
+            })
+
+        return {
+            "total": len(summaries),
+            "tools": summaries,
+        }
 
     # =========================================================================
     # 保留：获取 FL Studio 原生 API
